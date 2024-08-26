@@ -1,0 +1,92 @@
+<html><head><base href="https://tailwind-audio-player.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tailwind MP3 Player</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  .pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+</style>
+</head>
+<body class="bg-gradient-to-r from-purple-500 to-pink-500 min-h-screen flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow-2xl p-8 w-96">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">MP3 Player</h1>
+    <label for="file-input" class="block w-full">
+      <div class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 text-center">
+        Select MP3 Files
+      </div>
+    </label>
+    <input type="file" id="file-input" accept=".mp3" multiple class="hidden">
+    <ul id="playlist" class="mt-6 space-y-2 max-h-60 overflow-y-auto"></ul>
+    <audio id="audio-player" class="w-full mt-6" controls></audio>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const playlist = document.getElementById('playlist');
+    const audioPlayer = document.getElementById('audio-player');
+
+    let files = [];
+    let currentTrack = 0;
+
+    fileInput.addEventListener('change', (e) => {
+      files = Array.from(e.target.files).sort((a, b) => a.name.localeCompare(b.name));
+      updatePlaylist();
+      if (files.length > 0) {
+        playTrack(0);
+      }
+    });
+
+    function updatePlaylist() {
+      playlist.innerHTML = '';
+      files.forEach((file, index) => {
+        const li = document.createElement('li');
+        li.className = 'bg-gray-100 hover:bg-gray-200 rounded p-2 cursor-pointer transition duration-300 ease-in-out';
+        li.textContent = file.name;
+        li.addEventListener('click', () => playTrack(index));
+        playlist.appendChild(li);
+      });
+    }
+
+    function playTrack(index) {
+      if (index >= 0 && index < files.length) {
+        currentTrack = index;
+        const file = files[currentTrack];
+        const fileURL = URL.createObjectURL(file);
+        audioPlayer.src = fileURL;
+        audioPlayer.play();
+        updatePlayingStatus();
+      }
+    }
+
+    function updatePlayingStatus() {
+      const items = playlist.getElementsByTagName('li');
+      for (let i = 0; i < items.length; i++) {
+        items[i].classList.remove('bg-blue-200', 'text-blue-800', 'font-semibold', 'pulse');
+      }
+      if (items[currentTrack]) {
+        items[currentTrack].classList.add('bg-blue-200', 'text-blue-800', 'font-semibold', 'pulse');
+      }
+    }
+
+    audioPlayer.addEventListener('ended', () => {
+      currentTrack++;
+      if (currentTrack < files.length) {
+        playTrack(currentTrack);
+      } else {
+        currentTrack = 0;
+        playTrack(currentTrack);
+      }
+    });
+  </script>
+</body>
+</html>
